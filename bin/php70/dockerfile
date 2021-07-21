@@ -1,0 +1,30 @@
+FROM brettt89/silverstripe-web:7.0-apache
+WORKDIR $APACHE_DOCUMENT_ROOT
+
+ARG xdebug_remote_host=host.docker.internal
+ARG xdebug_remote_port=9000
+ARG xdebug_remote_enable=1
+
+COPY --from=composer:1 /usr/bin/composer /usr/local/bin/composer
+
+# Note: we're silencing output from 'apt'. If issues arise, remove '2>/dev/null'
+
+# composer requires git
+RUN apt update -y 2>/dev/null && \
+    apt install git -y --no-install-recommends 2>/dev/null
+
+# add private key to authenticate with gitlab
+RUN which ssh-agent || ( apt-get install openssh-client -y 2>/dev/null)
+RUN mkdir -p /root/.ssh && ln -s /run/secrets/sshkey /root/.ssh/
+RUN chown -R root:root /root/.ssh
+RUN echo "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+
+
+RUN pecl install xdebug-2.5.0
+RUN docker-php-ext-enable xdebug \
+    && echo "xdebug.remote_host = ${xdebug_remote_host}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_port = ${xdebug_remote_port}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.remote_enable= ${xdebug_remote_enable}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# Enable apache modules
+RUN a2enmod rewrite headers ssl

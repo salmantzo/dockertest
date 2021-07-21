@@ -1,0 +1,212 @@
+version: "3.8"
+
+services:
+
+# IMPORTANT:
+# The Apache config uses the COMPOSE_PROJECT_NAME variable to map the dev url, e.g.
+# "http://ssboilerplate.tzo"
+# Your hosts file has to be configured to redirect "ssboilerplate.tzo" to "127.0.0.1".
+  silverstripe:
+    build:
+      context: ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/
+      dockerfile: ./bin/${PHPVERSION}/dockerfile
+    profiles:
+      - silverstripe
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets
+    secrets:
+      - sshkey
+    # Run stuff that relies on volumes and secrets here
+    # Don't forget to start a foreground process to keep container alive
+    command: bash -c "
+        [ -d 'vendor' ] || (composer install --no-interaction &&
+        composer vendor-expose auto --no-interaction &&
+        vendor/bin/sake dev/build?flush) &&
+        apache2-foreground"
+    env_file:
+      - config/envs/${COMPOSE_PROJECT_NAME}.env
+    environment:
+      # https://getcomposer.org/doc/03-cli.md#composer-home
+      - COMPOSER_HOME=/tmp/composer
+      # Override database specified in .env with our service db
+      - BASE_PATH=${APACHE_DOCUMENT_ROOT}
+      - SS_TRUSTED_PROXY_IPS=*
+      - SS_ENVIRONMENT_TYPE=dev
+      - SS_DATABASE_SERVER=mysqldb
+      - SS_DATABASE_NAME=SS_${COMPOSE_PROJECT_NAME}
+      - SS_DATABASE_USERNAME=root
+      - SS_DATABASE_PASSWORD=
+      - SS_DEFAULT_ADMIN_USERNAME=admin
+      - SS_DEFAULT_ADMIN_PASSWORD=admin
+      - SS_ERROR_LOG=ss_errors.log
+      - SS_SEND_ALL_EMAILS_TO="local@host.com"
+    ports:
+      - "${HOST_MACHINE_UNSECURE_HOST_PORT}:80"
+    depends_on:
+      - mysqldb
+    volumes:
+      - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}:${APACHE_DOCUMENT_ROOT}
+      - ${PHP_INI-./config/php/php.ini}:/usr/local/etc/php/php.ini
+      - ${VHOSTS_DIR-./config/vhosts}:/etc/apache2/sites-enabled
+      - ${APACHE_LOG_DIR-./logs/apache2}:/etc/apache2/logs/apache2
+      - ${XDEBUG_LOG_DIR-./logs/xdebug}/xdebug.log:/tmp/xdebug.log
+      - ${SSL_DIR}:/etc/apache2/ssl
+      - ~/.composer:/tmp/composer
+    networks:
+      - tzo
+
+  mysqldb:
+    image: mysql:8.0.23
+    ports:
+      - "127.0.0.1:${HOST_MACHINE_MYSQL_PORT}:3306"
+    environment:
+      # Allow empty password connections
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    # Use "non-strict" sql mode
+    # Use "mysql_native_password" authentication for php 7.3 and below
+    command: [
+      '--sql_mode=',
+      '--default-authentication-plugin=mysql_native_password',
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_0900_ai_ci'
+    ]
+    volumes:
+      # Use this to have Docker manage database data in a special "volume"
+      # Alternatively, you can create a volume that maps your local path to "/var/lib/mysql" (e.g. existing databases)
+      # https://docs.docker.com/compose/compose-file/compose-file-v3/#volume-configuration-reference
+      - ${MYSQL_DATA_DIR-./data/mysql}:/var/lib/mysql
+      - ${MYSQL_LOG_DIR-./logs/mysql}:/var/log/mysql
+      - ./config/mysql:/etc/mysql/conf.d
+      - ${MYSQL_DUMPS_DIR}:/uploadSQL
+    networks:
+      - tzo
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - '${HOST_MACHINE_PMA_PORT}:80'
+    environment:
+      PMA_HOST: mysqldb
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - /sessions
+      - ${PHP_INI-./config/php/php.ini}:/usr/local/etc/php/conf.d/php-phpmyadmin.ini
+    networks:
+      - tzo
+
+  api:
+    build:
+      context: ${PROJECTS_ROOT}/${API_PROJECT_NAME-dottie}/
+      dockerfile: ./bin/${API_PHPVERSION-php74}/dockerfile
+    profiles:
+      - dottie
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets
+    secrets:
+      - sshkey
+    # Run stuff that relies on volumes and secrets here
+    # Don't forget to start a foreground process to keep container alive
+    command: bash -c "
+        [ -d 'vendor' ] || (composer install --no-interaction &&
+        composer vendor-expose auto --no-interaction &&
+        vendor/bin/sake dev/build?flush) &&
+        chmod -R 0777 ./public &&
+        apache2-foreground"
+    env_file:
+      - config/envs/${COMPOSE_PROJECT_NAME}.env
+    environment:
+      # https://getcomposer.org/doc/03-cli.md#composer-home
+      - COMPOSER_HOME=/tmp/composer
+      # Override database specified in .env with our service db
+      - BASE_PATH=${APACHE_DOCUMENT_ROOT}
+      - SS_TRUSTED_PROXY_IPS=*
+      - SS_ENVIRONMENT_TYPE=dev
+      - SS_DATABASE_SERVER=mysqldb
+      - SS_DATABASE_NAME=SS_${API_PROJECT_NAME-dottie}
+      - SS_DATABASE_USERNAME=root
+      - SS_DATABASE_PASSWORD=
+      - SS_DEFAULT_ADMIN_USERNAME=admin
+      - SS_DEFAULT_ADMIN_PASSWORD=admin
+      - SS_ERROR_LOG=ss_errors.log
+      - SS_SEND_ALL_EMAILS_TO="local@host.com"
+      - XDEBUG_CONFIG=remote_port=9001
+    ports:
+      - "${HOST_MACHINE_SECURE_HOST_PORT}:443"
+    depends_on:
+      - mysqldb
+    volumes:
+      - ${PROJECTS_ROOT}/${API_PROJECT_NAME-dottie}:${APACHE_DOCUMENT_ROOT}
+      - ${PHP_INI-./config/php/php.ini}:/usr/local/etc/php/php.ini
+      - ${VHOSTS_DIR-./config/vhosts}:/etc/apache2/sites-enabled
+      - ${APACHE_LOG_DIR-./logs/apache2}:/etc/apache2/logs/apache2
+      - ${XDEBUG_LOG_DIR-./logs/xdebug}/xdebug.log:/tmp/xdebug.log
+      - ${SSL_DIR}:/etc/apache2/ssl
+      - ~/.composer:/tmp/composer
+    networks:
+      - tzo
+
+  wordpress:
+    image: wordpress
+    profiles:
+      - wordpress
+    ports:
+      - "${HOST_MACHINE_UNSECURE_HOST_PORT}:80"
+    environment:
+      - WORDPRESS_DB_HOST=mysqldb
+      - WORDPRESS_DB_USER=root
+      - WORDPRESS_DB_PASSWORD=
+      - WORDPRESS_DB_NAME=WP_${COMPOSE_PROJECT_NAME}
+      - WORDPRESS_DB_CHARSET=utf8mb4
+      - WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX-wp_}
+    depends_on:
+      - mysqldb
+    volumes:
+      - wordpress_root:${APACHE_DOCUMENT_ROOT}
+      - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/themes:${APACHE_DOCUMENT_ROOT}/wp-content/themes
+      - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/plugins:${APACHE_DOCUMENT_ROOT}/wp-content/plugins
+      - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/uploads:${APACHE_DOCUMENT_ROOT}/wp-content/uploads
+    networks:
+      - tzo
+
+  wpcli:
+    image: wordpress:cli
+    profiles:
+      - wordpress
+    user: xfs
+    stdin_open: true
+    tty: true
+    environment:
+      - WORDPRESS_DB_HOST=mysqldb
+      - WORDPRESS_DB_USER=root
+      - WORDPRESS_DB_PASSWORD=
+      - WORDPRESS_DB_NAME=WP_${COMPOSE_PROJECT_NAME}
+      - WORDPRESS_DB_CHARSET=utf8mb4
+      - WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX-wp_}
+    depends_on:
+      - mysqldb
+      - wordpress
+    volumes:
+      - wordpress_root:${APACHE_DOCUMENT_ROOT}
+      - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/themes:${APACHE_DOCUMENT_ROOT}/wp-content/themes
+      - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/plugins:${APACHE_DOCUMENT_ROOT}/wp-content/plugins
+      - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/uploads:${APACHE_DOCUMENT_ROOT}/wp-content/uploads
+      - ${MYSQL_DUMPS_DIR}:/uploadSQL
+    networks:
+      - tzo
+
+# https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets-configuration-reference
+secrets:
+  sshkey:
+      external: false
+      file: ${SSH_KEY}
+
+# https://www.tutorialworks.com/container-networking/
+networks:
+  tzo:
+    # This is required for xdebug to work
+    internal: false
+
+volumes:
+  mysql:
+  mysql_config:
+  wordpress_root:

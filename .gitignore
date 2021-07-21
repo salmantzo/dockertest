@@ -1,0 +1,6 @@
+.env
+logs/apache2/*.log
+logs/xdebug/*.log
+config/envs/*.env
+config/vhosts/*
+!config/vhosts/000-default.conf
