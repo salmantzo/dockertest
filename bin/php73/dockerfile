@@ -30,5 +30,7 @@ RUN yes | pecl install xdebug \
     && echo "xdebug.log_level = ${xdebug_log_level}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.log = ${xdebug_log}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
+RUN apt-get install ssl-cert -y 2>/dev/null
+
 # Enable apache modules
 RUN a2enmod rewrite headers ssl

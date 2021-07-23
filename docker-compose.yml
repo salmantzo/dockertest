@@ -49,7 +49,6 @@ services:
       - ${VHOSTS_DIR-./config/vhosts}:/etc/apache2/sites-enabled
       - ${APACHE_LOG_DIR-./logs/apache2}:/etc/apache2/logs/apache2
       - ${XDEBUG_LOG_DIR-./logs/xdebug}/xdebug.log:/tmp/xdebug.log
-      - ${SSL_DIR}:/etc/apache2/ssl
       - ~/.composer:/tmp/composer
     networks:
       - tzo
@@ -140,7 +139,6 @@ services:
       - ${VHOSTS_DIR-./config/vhosts}:/etc/apache2/sites-enabled
       - ${APACHE_LOG_DIR-./logs/apache2}:/etc/apache2/logs/apache2
       - ${XDEBUG_LOG_DIR-./logs/xdebug}/xdebug.log:/tmp/xdebug.log
-      - ${SSL_DIR}:/etc/apache2/ssl
       - ~/.composer:/tmp/composer
     networks:
       - tzo

@@ -26,5 +26,7 @@ RUN docker-php-ext-enable xdebug \
     && echo "xdebug.remote_port = ${xdebug_remote_port}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.remote_enable= ${xdebug_remote_enable}" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
+RUN apt-get install ssl-cert -y 2>/dev/null
+
 # Enable apache modules
 RUN a2enmod rewrite headers ssl
