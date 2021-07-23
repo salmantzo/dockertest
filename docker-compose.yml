@@ -97,7 +97,7 @@ services:
   api:
     build:
       context: ${PROJECTS_ROOT}/${API_PROJECT_NAME-dottie}/
-      dockerfile: ./bin/${API_PHPVERSION-php74}/dockerfile
+      dockerfile: ./bin/${API_PHPVERSION-php71}/dockerfile
     profiles:
       - dottie
     # https://docs.docker.com/compose/compose-file/compose-file-v3/#secrets
