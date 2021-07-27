@@ -144,7 +144,8 @@ services:
       - tzo
 
   wordpress:
-    image: wordpress
+    build:
+      context: ./bin/wp
     profiles:
       - wordpress
     ports:
