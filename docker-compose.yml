@@ -8,7 +8,7 @@ services:
 # Your hosts file has to be configured to redirect "ssboilerplate.tzo" to "127.0.0.1".
   silverstripe:
     build:
-      context: ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/
+      context: ./
       dockerfile: ./bin/${PHPVERSION}/dockerfile
     profiles:
       - silverstripe
@@ -96,7 +96,7 @@ services:
 
   api:
     build:
-      context: ${PROJECTS_ROOT}/${API_PROJECT_NAME-dottie}/
+      context: ./
       dockerfile: ./bin/${API_PHPVERSION-php71}/dockerfile
     profiles:
       - dottie
