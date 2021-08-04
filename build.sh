@@ -13,4 +13,4 @@ else
     sort -u -t '=' -k 1,1 ./.env | grep -v '^$\|^\s*\#' > ./config/envs/$COMPOSE_PROJECT_NAME.env
 fi
 
-docker compose --env-file ./config/envs/$COMPOSE_PROJECT_NAME.env build
+docker-compose --env-file ./config/envs/$COMPOSE_PROJECT_NAME.env build
