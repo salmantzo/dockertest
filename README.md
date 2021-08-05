@@ -15,12 +15,18 @@ Standalone Docker set up for Silverstripe and WordPress
 
 A number of shell scripts have been included to make using common docker commands easier.
 
-*NB: These currently use the `COMPOSE_PROJECT_NAME` environment variable to determine what containers to effect.*
+These use the `COMPOSE_PROJECT_NAME` environment variable to determine what containers to effect.
 
 - `build.sh` - Builds images
 - `remove.sh` - Completely removes containers
 - `start.sh` - Starts containers, (builds images if they don't exist)
 - `stop.sh` - Stops containers (doesn't remove them)
+
+*You can override the `COMPOSE_PROJECT_NAME` by adding an argument after the shell script.*
+
+```shell
+build.sh ssboilerplate
+```
 
 ## Accessing the site
 

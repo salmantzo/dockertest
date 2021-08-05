@@ -4,6 +4,10 @@ set -o allexport
 source ./.env
 set +o allexport
 
+if [ -n 1 ]; then
+    COMPOSE_PROJECT_NAME=$1
+fi
+
 PROJECT_ENV_FILE=../$COMPOSE_PROJECT_NAME/docker/.env
 
 if [ -f "$PROJECT_ENV_FILE" ]; then
