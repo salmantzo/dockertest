@@ -49,6 +49,7 @@ services:
       - ${VHOSTS_DIR-./config/vhosts}:/etc/apache2/sites-enabled
       - ${APACHE_LOG_DIR-./logs/apache2}:/etc/apache2/logs/apache2
       - ${XDEBUG_LOG_DIR-./logs/xdebug}/xdebug.log:/tmp/xdebug.log
+      - ${GIT_CONFIG-~/.gitconfig}:/root/.gitconfig
       - ~/.composer:/tmp/composer
     networks:
       - tzo
@@ -140,6 +141,7 @@ services:
       - ${VHOSTS_DIR-./config/vhosts}:/etc/apache2/sites-enabled
       - ${APACHE_LOG_DIR-./logs/apache2}:/etc/apache2/logs/apache2
       - ${XDEBUG_LOG_DIR-./logs/xdebug}/xdebug.log:/tmp/xdebug.log
+      - ${GIT_CONFIG-~/.gitconfig}:/root/.gitconfig
       - ~/.composer:/tmp/composer
     networks:
       - tzo
@@ -165,6 +167,7 @@ services:
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/themes:${APACHE_DOCUMENT_ROOT}/wp-content/themes
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/plugins:${APACHE_DOCUMENT_ROOT}/wp-content/plugins
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/uploads:${APACHE_DOCUMENT_ROOT}/wp-content/uploads
+      - ${GIT_CONFIG-~/.gitconfig}:/root/.gitconfig
     networks:
       - tzo
 
