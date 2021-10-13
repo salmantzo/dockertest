@@ -8,24 +8,32 @@ Standalone Docker set up for Silverstripe and WordPress
 - Clone this repo into your projects folder
 - Create a copy of the `sample.env` file and rename it `.env`
 - Edit the variables in `.env` to match your set up
-- run `./start.sh` in your terminal (Windows users should use Git Bash)
+- Move the project variables to the */docker/.env* file in your project directory
+- Run `./start.sh {$COMPOSE_PROJECT_NAME}` in your terminal (Windows users should use Git Bash)
 - Your site should appear at `localhost:80`
 
 ## Shell scripts
 
 A number of shell scripts have been included to make using common docker commands easier.
 
-These use the `COMPOSE_PROJECT_NAME` environment variable to determine what containers to effect.
-
 - `build.sh` - Builds images
 - `remove.sh` - Completely removes containers
 - `start.sh` - Starts containers, (builds images if they don't exist)
 - `stop.sh` - Stops containers (doesn't remove them)
 
-*You can override the `COMPOSE_PROJECT_NAME` by adding an argument after the shell script.*
+**You have to specify the `COMPOSE_PROJECT_NAME` by adding an argument after the shell script.**
 
 ```shell
 build.sh ssboilerplate
+```
+
+## Importing SQL Dumps
+
+Add a MySQL dump to your `$MYSQL_DUMPS_DIR` then open the *mysqldb*
+container in a CLI and run the command below, substituting the names of the file to match your needs.
+
+```shell
+mysql -u root -p {$COMPOSE_PROJECT_NAME} < /uploadSQL/{$MYSQL_DUMP_NAME}.sql;
 ```
 
 ## Accessing the site
