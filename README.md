@@ -27,6 +27,15 @@ A number of shell scripts have been included to make using common docker command
 build.sh ssboilerplate
 ```
 
+## Importing SQL Dumps
+
+Add a MySQL dump to your `$MYSQL_DUMPS_DIR` then open the *mysqldb*
+container in a CLI and run the command below, substituting the names of the file to match your needs.
+
+```shell
+mysql -u root -p {$COMPOSE_PROJECT_NAME} < /uploadSQL/{$MYSQL_DUMP_NAME}.sql;
+```
+
 ## Accessing the site
 
 [localhost](localhost:80) should be mapped to `${COMPOSE_PROJECT_NAME}.tzo`
