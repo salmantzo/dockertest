@@ -164,6 +164,7 @@ services:
       - mysqldb
     volumes:
       - wordpress_root:${APACHE_DOCUMENT_ROOT}
+      - ${PHP_INI-./config/php/php.ini}:/usr/local/etc/php/php.ini
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/themes:${APACHE_DOCUMENT_ROOT}/wp-content/themes
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/plugins:${APACHE_DOCUMENT_ROOT}/wp-content/plugins
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/uploads:${APACHE_DOCUMENT_ROOT}/wp-content/uploads
@@ -192,6 +193,7 @@ services:
       - wordpress
     volumes:
       - wordpress_root:${APACHE_DOCUMENT_ROOT}
+      - ${PHP_INI-./config/php/php.ini}:/usr/local/etc/php/php.ini
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/themes:${APACHE_DOCUMENT_ROOT}/wp-content/themes
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/plugins:${APACHE_DOCUMENT_ROOT}/wp-content/plugins
       - ${PROJECTS_ROOT}/${COMPOSE_PROJECT_NAME}/wp-content/uploads:${APACHE_DOCUMENT_ROOT}/wp-content/uploads
