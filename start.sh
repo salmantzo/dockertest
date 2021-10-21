@@ -23,10 +23,12 @@ WP_PROJECT_ENV_FILE=../$COMPOSE_PROJECT_NAME/wp-content/themes/$COMPOSE_PROJECT_
 
 PROJECT_ENV_FILE=$SS_PROJECT_ENV_FILE
 
+# Check if there is a Silverstripe .env file
 if [ ! -f "$PROJECT_ENV_FILE" ]; then
 
     PROJECT_ENV_FILE=$WP_PROJECT_ENV_FILE
 
+    # If not, check if there is a Wordpress .env file
     if [ ! -f "$PROJECT_ENV_FILE" ]; then
 
         echo "ERROR: .env file not found in project directory"
